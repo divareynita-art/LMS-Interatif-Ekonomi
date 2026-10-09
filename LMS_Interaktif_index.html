@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EconSpace - LMS Gamifikasi, Rekap Nilai & Timer</title>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
+    <style>
+        .gamified-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <!-- Navigation Header -->
+    <nav class="bg-indigo-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl font-bold">🚀 EconSpace LMS</span>
+        </div>
+        <div class="space-x-4">
+            <button onclick="switchPortal('siswa')" class="bg-indigo-700 px-4 py-2 rounded hover:bg-indigo-600 transition">Portal Siswa</button>
+            <button onclick="switchPortal('guru')" class="bg-purple-700 px-4 py-2 rounded hover:bg-purple-600 transition">Portal Guru (CMS)</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <main class="container mx-auto mt-6 p-4 max-w-5xl">
+
+        <!-- ================= PORTAL SISWA ================= -->
+        <section id="portal-siswa" class="space-y-6">
+            <div class="gamified-card text-white p-6 rounded-xl shadow-lg flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Selamat Belajar, Diva! 👋</h1>
+                    <p class="mt-2 opacity-90">Materi: Pelaku Ekonomi & Interaksi Antarruang</p>
+                </div>
+                <div class="text-right bg-white bg-opacity-20 p-4 rounded-lg">
+                    <p class="text-sm">Total XP Anda:</p>
+                    <span id="score-display" class="text-3xl font-extrabold text-yellow-300">350 XP</span>
+                </div>
+            </div>
+
+            <!-- Tab Navigasi Siswa -->
+            <div class="flex flex-wrap space-x-2 border-b border-gray-300 pb-2">
+                <button onclick="switchStudentTab('pendahuluan')" class="px-4 py-2 font-semibold text-indigo-700 border-b-2 border-indigo-700 tab-btn-s">1. Pendahuluan</button>
+                <button onclick="switchStudentTab('materi')" class="px-4 py-2 font-semibold text-gray-600 tab-btn-s">2. Materi Inti</button>
+                <button onclick="switchStudentTab('kuis')" class="px-4 py-2 font-semibold text-gray-600 tab-btn-s">3. Kuis & Evaluasi</button>
+                <button onclick="switchStudentTab('leaderboard')" class="px-4 py-2 font-semibold text-gray-600 tab-btn-s">4. Papan Peringkat 🏆</button>
+            </div>
+
+            <!-- Konten Tab Pendahuluan -->
+            <div id="tab-pendahuluan" class="student-tab-content bg-white p-6 rounded-xl shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Tujuan Pembelajaran</h2>
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li>Memahami peran 4 pelaku ekonomi utama (RTK, RTP, Pemerintah, Luar Negeri).</li>
+                    <li>Menganalisis interaksi antarruang dalam kegiatan ekonomi.</li>
+                    <li>Selesaikan kuis sebelum batas waktu habis untuk mendapatkan bonus XP!</li>
+                </ul>
+            </div>
+
+            <!-- Konten Tab Materi -->
+            <div id="tab-materi" class="student-tab-content bg-white p-6 rounded-xl shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📖 Modul Pembelajaran Utama</h2>
+                <div id="dynamic-material-render" class="prose max-w-none text-gray-700 space-y-4">
+                    <p><strong>1. Rumah Tangga Konsumen (RTK):</strong> Menyediakan faktor produksi dan melakukan konsumsi barang/jasa.</p>
+                    <p><strong>2. Rumah Tangga Produsen (RTP):</strong> Mengolah faktor produksi untuk menghasilkan barang/jasa serta mencari laba.</p>
+                    <p><strong>3. Pemerintah:</strong> Mengatur, mengontrol, serta menjadi pelaku produsen/konsumen melalui kebijakan fiskal.</p>
+                    <p><strong>4. Masyarakat Luar Negeri:</strong> Berperan dalam kegiatan ekspor, impor, devisa, serta investasi lintas negara.</p>
+                </div>
+            </div>
+
+            <!-- Konten Tab Kuis & Timer -->
+            <div id="tab-kuis" class="student-tab-content bg-white p-6 rounded-xl shadow hidden">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">🎮 Kuis Berbatas Waktu</h2>
+                        <span id="quiz-progress" class="text-sm font-semibold text-indigo-600">Soal 1 dari 3</span>
+                    </div>
+                    <!-- Indikator Timer -->
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg font-bold flex items-center space-x-2">
+                        <span>⏱️ Sisa Waktu:</span>
+                        <span id="timer-display" class="text-lg">02:00</span>
+                    </div>
+                </div>
+
+                <div id="quiz-container" class="space-y-4">
+                    <p id="question-text" class="text-lg font-medium text-gray-800"></p>
+                    <div class="space-y-3" id="answer-options"></div>
+                    <div class="flex justify-between items-center mt-6">
+                        <p id="quiz-feedback" class="font-bold"></p>
+                        <button id="next-btn" onclick="nextQuestion()" class="hidden bg-indigo-700 text-white px-5 py-2 rounded-lg hover:bg-indigo-600 transition">Soal Selanjutnya ➡️</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Konten Tab Leaderboard -->
+            <div id="tab-leaderboard" class="student-tab-content bg-white p-6 rounded-xl shadow hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🏆 Papan Peringkat Kelas</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-indigo-100 text-indigo-900">
+                                <th class="p-3 border">Peringkat</th>
+                                <th class="p-3 border">Nama Siswa</th>
+                                <th class="p-3 border text-right">Total XP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PORTAL GURU (CMS) ================= -->
+        <section id="portal-guru" class="space-y-6 hidden">
+            <div class="bg-purple-900 text-white p-6 rounded-xl shadow-lg">
+                <h1 class="text-3xl font-bold">🛠️ Dashboard Pengelolaan Guru (CMS)</h1>
+                <p class="mt-2 opacity-90">Kelola materi, bank soal, atur batas waktu kuis, dan unduh rekap nilai siswa.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Pengaturan Batas Waktu Kuis -->
+                <div class="bg-white p-6 rounded-xl shadow space-y-4">
+                    <h2 class="text-xl font-bold text-gray-800">⏱️ Manajemen Batas Waktu Kuis</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Durasi Pengerjaan Kuis (Menit):</label>
+                        <input type="number" id="teacher-timer-input" value="2" class="w-full mt-1 p-3 border rounded-lg">
+                    </div>
+                    <button onclick="updateTimerSetting()" class="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-600 transition">Perbarui Waktu Pengerjaan</button>
+                </div>
+
+                <!-- Rekap Nilai Siswa & Unduh CSV -->
+                <div class="bg-white p-6 rounded-xl shadow space-y-4">
+                    <h2 class="text-xl font-bold text-gray-800">📊 Rekap Nilai & Unduh Laporan</h2>
+                    <p class="text-sm text-gray-600">Unduh data perolehan skor dan XP seluruh siswa dalam format CSV (bisa dibuka langsung via Microsoft Excel atau Google Sheets).</p>
+                    <button onclick="downloadCSVReport()" class="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-600 transition font-bold flex justify-center items-center space-x-2">
+                        <span>📥 Unduh Rekap Nilai (CSV)</span>
+                    </button>
+                </div>
+
+                <!-- Editor Materi -->
+                <div class="bg-white p-6 rounded-xl shadow space-y-4 md:col-span-2">
+                    <h2 class="text-xl font-bold text-gray-800">📝 Modifikasi Materi Pelajaran</h2>
+                    <textarea id="teacher-material-input" rows="4" class="w-full p-3 border rounded-lg">1. Rumah Tangga Konsumen (RTK): Menyediakan faktor produksi dan melakukan konsumsi barang/jasa.
+2. Rumah Tangga Produsen (RTP): Mengolah faktor produksi untuk menghasilkan barang/jasa serta mencari laba.
+3. Pemerintah: Mengatur, mengontrol, serta menjadi pelaku produsen/konsumen melalui kebijakan fiskal.
+4. Masyarakat Luar Negeri: Berperan dalam kegiatan ekspor, impor, devisa, serta investasi lintas negara.</textarea>
+                    <button onclick="saveMaterial()" class="bg-purple-700 text-white px-4 py-2 rounded hover:bg-purple-600 transition">Simpan Materi</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentXP = 350;
+        let currentQuestionIdx = 0;
+        let quizTimeLeft = 120; // 2 Menit dalam detik
+        let timerInterval = null;
+
+        let quizQuestions = [
+            {
+                question: "Siapakah pelaku ekonomi yang bertugas membuat kebijakan fiskal, pengatur regulasi pasar, sekaligus produsen layanan publik?",
+                options: ["A. Rumah Tangga Konsumen", "B. Pemerintah", "C. Masyarakat Luar Negeri", "D. Rumah Tangga Produsen"],
+                correct: 1
+            },
+            {
+                question: "Kegiatan menjual barang atau jasa dari dalam negeri ke luar negeri disebut sebagai...",
+                options: ["A. Impor", "B. Devisa", "C. Ekspor", "D. Investasi"],
+                correct: 2
+            },
+            {
+                question: "Peran utama dari Rumah Tangga Konsumen (RTK) dalam siklus perekonomian adalah...",
+                options: ["A. Menyediakan faktor produksi & mengonsumsi produk", "B. Mencari laba maksimal dari penjualan", "C. Mencetak uang kartal", "D. Mengatur neraca perdagangan internasional"],
+                correct: 0
+            }
+        ];
+
+        let leaderboardData = [
+            { rank: 1, name: "Budi Santoso", xp: 520, status: "Selesai" },
+            { rank: 2, name: "Siti Rahma", xp: 480, status: "Selesai" },
+            { rank: 3, name: "Diva Reynita Azzahra", xp: 350, status: "Aktif" },
+            { rank: 4, name: "Ahmad Fauzi", xp: 290, status: "Selesai" },
+            { rank: 5, name: "Dewi Lestari", xp: 210, status: "Belum Mulai" }
+        ];
+
+        window.onload = function() {
+            renderQuestion();
+            renderLeaderboard();
+            startQuizTimer();
+        };
+
+        function switchPortal(portal) {
+            if(portal === 'siswa') {
+                document.getElementById('portal-siswa').classList.remove('hidden');
+                document.getElementById('portal-guru').classList.add('hidden');
+            } else {
+                document.getElementById('portal-siswa').classList.add('hidden');
+                document.getElementById('portal-guru').classList.remove('hidden');
+            }
+        }
+
+        function switchStudentTab(tab) {
+            document.querySelectorAll('.student-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn-s').forEach(el => {
+                el.classList.remove('text-indigo-700', 'border-b-2', 'border-indigo-700');
+                el.classList.add('text-gray-600');
+            });
+
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            event.target.classList.add('text-indigo-700', 'border-b-2', 'border-indigo-700');
+            event.target.classList.remove('text-gray-600');
+            
+            if(tab === 'leaderboard') renderLeaderboard();
+        }
+
+        // Timer Pengerjaan Kuis
+        function startQuizTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if(quizTimeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('quiz-container').innerHTML = `
+                        <div class="text-center py-8">
+                            <h3 class="text-2xl font-bold text-red-600 mb-2">⌛ Waktu Pengerjaan Habis!</h3>
+                            <p class="text-gray-600">Batas waktu kuis yang ditentukan guru telah berakhir.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                quizTimeLeft--;
+                let minutes = Math.floor(quizTimeLeft / 60);
+                let seconds = quizTimeLeft % 60;
+                document.getElementById('timer-display').textContent = 
+                    String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+            }, 1000);
+        }
+
+        function updateTimerSetting() {
+            const mins = parseInt(document.getElementById('teacher-timer-input').value);
+            if(isNaN(mins) || mins <= 0) {
+                alert("Masukkan durasi waktu yang valid!");
+                return;
+            }
+            quizTimeLeft = mins * 60;
+            startQuizTimer();
+            alert(`Berhasil! Batas waktu kuis diubah menjadi ${mins} menit.`);
+        }
+
+        // Render Kuis
+        function renderQuestion() {
+            if(currentQuestionIdx >= quizQuestions.length) {
+                document.getElementById('quiz-container').innerHTML = `
+                    <div class="text-center py-8">
+                        <h3 class="text-2xl font-bold text-green-600 mb-2">🎉 Selamat, Kuis Selesai!</h3>
+                        <p class="text-gray-600 mb-4">Skor Anda telah terekam otomatis di sistem guru.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = quizQuestions[currentQuestionIdx];
+            document.getElementById('quiz-progress').textContent = `Soal ${currentQuestionIdx + 1} dari ${quizQuestions.length}`;
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('quiz-feedback').textContent = "";
+            document.getElementById('next-btn').classList.add('hidden');
+
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = "";
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 border rounded-lg hover:bg-indigo-50 transition font-medium text-gray-700";
+                btn.textContent = opt;
+                btn.onclick = () => checkQuizAnswer(idx, q.correct);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkQuizAnswer(selectedIdx, correctIdx) {
+            const feedback = document.getElementById('quiz-feedback');
+            const buttons = document.getElementById('answer-options').getElementsByTagName('button');
+
+            for(let btn of buttons) btn.disabled = true;
+
+            if(selectedIdx === correctIdx) {
+                feedback.textContent = "🎉 Benar! (+50 XP)";
+                feedback.className = "font-bold text-green-600";
+                currentXP += 50;
+                document.getElementById('score-display').textContent = currentXP + " XP";
+                updateUserLeaderboardXP();
+            } else {
+                feedback.textContent = "❌ Kurang tepat!";
+                feedback.className = "font-bold text-red-600";
+            }
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIdx++;
+            renderQuestion();
+        }
+
+        function renderLeaderboard() {
+            leaderboardData.sort((a, b) => b.xp - a.xp);
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = "";
+
+            leaderboardData.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.className = user.name === "Diva Reynita Azzahra" ? "bg-indigo-50 font-bold" : "hover:bg-gray-50";
+                row.innerHTML = `
+                    <td class="p-3 border text-center">#${index + 1}</td>
+                    <td class="p-3 border">${user.name} ${user.name === "Diva Reynita Azzahra" ? '⭐ (Anda)' : ''}</td>
+                    <td class="p-3 border text-right text-indigo-700">${user.xp} XP</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateUserLeaderboardXP() {
+            let userObj = leaderboardData.find(u => u.name === "Diva Reynita Azzahra");
+            if(userObj) {
+                userObj.xp = currentXP;
+            }
+        }
+
+        // Fitur Unduh Rekap Nilai ke Format CSV
+        function downloadCSVReport() {
+            let csvContent = "data:text/csv;charset=utf-8,Peringkat,Nama Siswa,Total XP,Status Pengerjaan\n";
+            leaderboardData.sort((a, b) => b.xp - a.xp);
+            
+            leaderboardData.forEach((row, index) => {
+                csvContent += `${index + 1},"${row.name}",${row.xp},"${row.status}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Rekap_Nilai_LMS_Ekonomi.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert("File rekap nilai berhasil diunduh dalam format CSV (kompatibel dengan Microsoft Excel)!");
+        }
+
+        function saveMaterial() {
+            const newText = document.getElementById('teacher-material-input').value;
+            const formatted = newText.split('\n').map(p => `<p>${p}</p>`).join('');
+            document.getElementById('dynamic-material-render').innerHTML = formatted;
+            alert("Materi berhasil diperbarui!");
+        }
+    </script>
+</body>
+  </html>
+  
